@@ -21,7 +21,7 @@ exports.processChat = async (req, res, next) => {
       conversation = await Conversation.findById(conversationId);
       if (!conversation) {
         console.warn('[Chat] Provided conversationId not found, starting new conversation:', conversationId);
-        conversation = new Conversation({ messages: [] }); // fallback instead of 404
+        conversation = new Conversation({ messages: [] }); 
       }
     } else {
       conversation = new Conversation({ messages: [] });

@@ -51,7 +51,7 @@ const ChatWindow = ({ conversationId, setConversationId, colorMode }) => {
         setHasNewMessages(true);
       }
     }
-  }, [messages]); // No need for scrollToBottom in deps if we inline the function
+  }, [messages]); 
 
   // Check if user has scrolled up and new messages arrive
   useEffect(() => {
@@ -285,6 +285,13 @@ const ChatWindow = ({ conversationId, setConversationId, colorMode }) => {
                   ? '0 0 0 2px rgba(106, 66, 193, 0.3)' 
                   : '0 0 0 2px rgba(106, 66, 193, 0.2)'
               }
+            },
+            '& .MuiInputBase-input': {
+              color: theme => theme.palette.mode === 'dark' ? '#f0f0f0' : '#333333',
+            },
+            '& .MuiInputBase-input::placeholder': {
+              color: theme => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)',
+              opacity: 1,
             }
           }}
           InputProps={{

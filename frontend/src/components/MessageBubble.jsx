@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import { Box, Typography, Paper, Chip, Link, Divider, IconButton, Tooltip, Fade, Menu, MenuItem } from '@mui/material';
+import { useTheme } from '@mui/material/styles'; 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CheckIcon from '@mui/icons-material/Check';
 import DiagnosisCard from './DiagnosisCard';
+import MedicalReferencePanel from './MedicalReferencePanel';
+import RiskStratificationPanel from './RiskStratificationPanel';
 
 const MessageBubble = ({ message }) => {
   const { role, content, imageUrl, data } = message;
   const [copied, setCopied] = useState(false);
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [referenceOpen, setReferenceOpen] = useState(false);
+  const [selectedDiagnosis, setSelectedDiagnosis] = useState(null);
   const openMenu = Boolean(menuAnchorEl);
+  const theme = useTheme(); 
   
   const isUser = role === 'user';
   const isError = role === 'error';
@@ -55,6 +61,11 @@ const MessageBubble = ({ message }) => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     handleMenuClose();
+  };
+
+  const handleShowReference = (diagnosis) => {
+    setSelectedDiagnosis(diagnosis);
+    setReferenceOpen(true);
   };
   
   return (
@@ -135,21 +146,25 @@ const MessageBubble = ({ message }) => {
           sx={{ 
             p: 2.5, 
             borderRadius: 2.5,
-            bgcolor: isUser 
-              ? theme => theme.palette.mode === 'dark' 
-                ? 'linear-gradient(45deg, #6a42c1 30%, #8263d9 90%)' 
-                : 'linear-gradient(45deg, #5c35b5 30%, #7e55e2 90%)'
+            backgroundColor: isUser 
+              ? theme.palette.mode === 'dark' 
+                ? '#6a42c1'  
+                : '#7347d5'  
               : isError 
                 ? '#ffebee' 
-                : theme => theme.palette.mode === 'dark' ? '#1c1c1c' : '#ffffff',
-            color: isUser ? 'white' : isError ? '#d32f2f' : 'text.primary',
+                : theme.palette.mode === 'dark' ? '#1c1c1c' : '#ffffff',
+            color: isUser 
+              ? '#ffffff' 
+              : isError 
+                ? '#d32f2f' 
+                : theme.palette.mode === 'dark' ? '#f0f0f0' : '#333333',
             border: !isUser && !isError ? 1 : 0,
             borderColor: 'divider',
             boxShadow: isUser 
               ? '0 2px 10px rgba(106, 66, 193, 0.3)' 
               : isError 
                 ? '0 2px 10px rgba(244, 67, 54, 0.2)' 
-                : theme => theme.palette.mode === 'dark' 
+                : theme.palette.mode === 'dark' 
                   ? 'none' 
                   : '0 1px 8px rgba(0, 0, 0, 0.07)',
           }}
@@ -197,6 +212,7 @@ const MessageBubble = ({ message }) => {
                   <DiagnosisCard 
                     title="Primary Diagnosis"
                     diagnosis={data.primaryDiagnosis}
+                    onShowReference={handleShowReference}
                   />
                 )}
                 
@@ -211,6 +227,7 @@ const MessageBubble = ({ message }) => {
                         key={idx}
                         diagnosis={diagnosis}
                         compact
+                        onShowReference={handleShowReference}
                       />
                     ))}
                   </Box>
@@ -246,11 +263,27 @@ const MessageBubble = ({ message }) => {
                     </Box>
                   </Box>
                 )}
+                
+                {/* Risk Stratification */}
+                {!isUser && data && (
+                  <RiskStratificationPanel 
+                    assistantContent={content}
+                    data={data}
+                  />
+                )}
               </Box>
             </Fade>
           )}
         </Paper>
       </Box>
+      
+      {/* Medical Reference Panel */}
+      <MedicalReferencePanel 
+        open={referenceOpen}
+        onClose={() => setReferenceOpen(false)}
+        diagnosis={selectedDiagnosis}
+        colorMode={theme.palette.mode}
+      />
     </Box>
   );
 };

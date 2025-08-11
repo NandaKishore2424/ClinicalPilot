@@ -13,7 +13,7 @@ const referenceCacheSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 86400 // 24 hours TTL
+    expires: 86400 
   }
 });
 

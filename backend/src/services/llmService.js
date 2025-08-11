@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const mockLlmService = require('./mockLlmService');
 
-// Function to get API key from environment variables
 function getApiKey() {
   return process.env.GEMINI_API_KEY;
 }
@@ -15,7 +14,6 @@ function getLlmProvider() {
 // Get the LLM provider
 const LLM_PROVIDER = getLlmProvider();
 
-// Add debug log to check if API key is available
 console.log('GEMINI_API_KEY available:', !!getApiKey());
 console.log('LLM_PROVIDER:', LLM_PROVIDER);
 
@@ -35,7 +33,6 @@ exports.processClinicalQuery = async (message, imageUrl, conversationHistory) =>
     return await processWithOpenAI(message, imageUrl, conversationHistory);
   } catch (error) {
     console.error('[LLM] Fatal error (will return fallback):', error.message);
-    // DO NOT throw – return fallback so API still answers
     return {
       error: true,
       text: `I could not generate a structured response (reason: ${error.message}). Please provide any additional clinical details (duration, associated symptoms, vitals).`,
@@ -59,19 +56,15 @@ async function processWithGemini(message, imageUrl, conversationHistory) {
     }
   };
 
-  // Add image to the request if provided
   if (imageUrl) {
     try {
-      // For local files, read and convert to base64
       if (!imageUrl.startsWith('http')) {
-        // Local file path
         const imagePath = path.join(__dirname, '..', '..', 'uploads', path.basename(imageUrl));
         if (fs.existsSync(imagePath)) {
           const base64Image = fs.readFileSync(imagePath, { encoding: 'base64' });
           
-          // Determine mime type from file extension
           const ext = path.extname(imagePath).toLowerCase();
-          let mimeType = "image/jpeg";  // default
+          let mimeType = "image/jpeg";  
           if (ext === '.png') mimeType = "image/png";
           if (ext === '.gif') mimeType = "image/gif";
           if (ext === '.bmp') mimeType = "image/bmp";
@@ -88,7 +81,6 @@ async function processWithGemini(message, imageUrl, conversationHistory) {
           console.error('Image file not found:', imagePath);
         }
       } else {
-        // Remote URL - fetch the image and convert to base64
         const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
         const base64Image = Buffer.from(imageResponse.data).toString('base64');
         const mimeType = imageResponse.headers['content-type'] || 'image/jpeg';
@@ -103,7 +95,6 @@ async function processWithGemini(message, imageUrl, conversationHistory) {
       }
     } catch (error) {
       console.error('Error processing image:', error);
-      // Continue without the image if there's an error
     }
   }
   
@@ -138,11 +129,9 @@ async function processWithGemini(message, imageUrl, conversationHistory) {
         attemptedModels.push(downgraded);
         // rebuild apiUrl with downgraded model
         apiResponse = null;
-        retries--; // consume one retry on the failed pro call
-        // small wait (use retryDelay if provided)
+        retries--; 
         const waitMs = retryInfo?.retryDelay ? parseInt(retryInfo.retryDelay) * 1000 || 2000 : delay;
         await new Promise(r => setTimeout(r, waitMs));
-        // swap modelName reference (cannot reassign const; so define modelName with let above)
         modelName = downgraded;
         apiUrl = `${apiUrlBase}${modelName}:generateContent?key=${apiKey}`;
         continue;
@@ -174,13 +163,10 @@ async function processWithGemini(message, imageUrl, conversationHistory) {
 }
 
 async function processWithOpenAI(message, imageUrl, conversationHistory) {
-  // Implementation for OpenAI API (GPT-4o)
-  // This is a placeholder - you would implement similar logic to the Gemini function
   throw new Error('OpenAI integration not implemented yet');
 }
 
 function constructClinicalPrompt(message, conversationHistory) {
-  // Format conversation history for context
   const formattedHistory = conversationHistory
     .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
     .join('\n');
@@ -249,7 +235,6 @@ function parseLLMResponse(responseText, userMessage) {
 
     if (!parsed.text) parsed.text = 'Clinical analysis generated.';
 
-    // Normalize primaryDiagnosis
     if (
       !parsed.primaryDiagnosis ||
       typeof parsed.primaryDiagnosis !== 'object' ||
