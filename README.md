@@ -239,19 +239,7 @@ Restart backend; structured mock responses continue UI testing.
 
 ---
 
-## 16. License
 
-(Choose an appropriate license — e.g., MIT — and add LICENSE file if distributing.)
-
----
-
-## 17. Acknowledgements
-
-- Gemini API (Google AI) for LLM + multimodal capabilities.
-- Tesseract.js community for in‑browser OCR.
-- Healthcare professionals whose workflows inspired the augmentation approach.
-
----
 
 ### Final Thought
 
